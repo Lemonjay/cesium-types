@@ -1,5 +1,5 @@
 {
-  "name": "cesium-types",
+  "name": "@types/cesium",
   "version": "1.112.2",
   "description": "Extract the cesium.d.ts from the cesium project",
   "types": "index.d.ts",
