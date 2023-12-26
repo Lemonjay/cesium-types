@@ -11,5 +11,12 @@
     "cesium"
   ],
   "author": "Lemonjay",
-  "license": "ISC"
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Lemonjay/cesium-types.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Lemonjay/cesium-types/issues"
+  },
+  "license": "Apache-2.0"
 }
