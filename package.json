@@ -1,6 +1,6 @@
 {
-  "name": "@types/cesium",
-  "version": "1.112.2",
+  "name": "cesium-types",
+  "version": "1.112.3",
   "description": "Extract the cesium.d.ts from the cesium project",
   "types": "index.d.ts",
   "scripts": {
