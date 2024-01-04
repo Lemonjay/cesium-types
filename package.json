@@ -1,6 +1,6 @@
 {
   "name": "cesium-types",
-  "version": "1.113.0",
+  "version": "1.113.1",
   "description": "Extract the cesium.d.ts from the cesium project",
   "types": "index.d.ts",
   "keywords": [
