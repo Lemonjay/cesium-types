@@ -1,11 +1,8 @@
 {
   "name": "cesium-types",
-  "version": "1.112.3",
+  "version": "1.113.0",
   "description": "Extract the cesium.d.ts from the cesium project",
   "types": "index.d.ts",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
   "keywords": [
     "types",
     "cesium"

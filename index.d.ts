@@ -1,4 +1,4 @@
-// Cesium.VERSION = 1.112.0
+// Cesium.VERSION = 1.113.0
 // tslint:disable-next-line:export-just-namespace
 export = Cesium;
 export as namespace Cesium;
@@ -5299,6 +5299,7 @@ namespace defaultValue {
     const EMPTY_OBJECT: any;
 }
 
+
 /**
  * @example
  * if (Cesium.defined(positions)) {
@@ -6009,6 +6010,13 @@ export class Ellipsoid {
      * @returns the intersection point if it's inside the ellipsoid, undefined otherwise
      */
     getSurfaceNormalIntersectionWithZAxis(position: Cartesian3, buffer?: number, result?: Cartesian3): Cartesian3 | undefined;
+    /**
+     * Computes the ellipsoid curvatures at a given position on the surface.
+     * @param surfacePosition - The position on the ellipsoid surface where curvatures will be calculated.
+     * @param [result] - The cartesian to which to copy the result, or undefined to create and return a new instance.
+     * @returns The local curvature of the ellipsoid surface at the provided position, in east and north directions.
+     */
+    getLocalCurvature(surfacePosition: Cartesian3, result?: Cartesian2): Cartesian2;
     /**
      * Computes an approximation of the surface area of a rectangle on the surface of an ellipsoid using
     Gauss-Legendre 10th order quadrature.
@@ -31495,20 +31503,6 @@ export class Globe {
      */
     atmosphereBrightnessShift: number;
     /**
-     * A scalar used to exaggerate the terrain. Defaults to <code>1.0</code> (no exaggeration).
-    A value of <code>2.0</code> scales the terrain by 2x.
-    A value of <code>0.0</code> makes the terrain completely flat.
-    Note that terrain exaggeration will not modify any other primitive as they are positioned relative to the ellipsoid.
-     */
-    terrainExaggeration: number;
-    /**
-     * The height from which terrain is exaggerated. Defaults to <code>0.0</code> (scaled relative to ellipsoid surface).
-    Terrain that is above this height will scale upwards and terrain that is below this height will scale downwards.
-    Note that terrain exaggeration will not modify any other primitive as they are positioned relative to the ellipsoid.
-    If {@link Globe#terrainExaggeration} is <code>1.0</code> this value will have no effect.
-     */
-    terrainExaggerationRelativeHeight: number;
-    /**
      * Whether to show terrain skirts. Terrain skirts are geometry extending downwards from a tile's edges used to hide seams between neighboring tiles.
     Skirts are always hidden when the camera is underground or translucency is enabled.
      */
@@ -31565,6 +31559,20 @@ export class Globe {
      * Gets an event that's raised when the terrain provider is changed
      */
     readonly terrainProviderChanged: Event;
+    /**
+     * A scalar used to exaggerate the terrain. Defaults to <code>1.0</code> (no exaggeration).
+    A value of <code>2.0</code> scales the terrain by 2x.
+    A value of <code>0.0</code> makes the terrain completely flat.
+    Note that terrain exaggeration will not modify any other primitive as they are positioned relative to the ellipsoid.
+     */
+    terrainExaggeration: number;
+    /**
+     * The height from which terrain is exaggerated. Defaults to <code>0.0</code> (scaled relative to ellipsoid surface).
+    Terrain that is above this height will scale upwards and terrain that is below this height will scale downwards.
+    Note that terrain exaggeration will not modify any other primitive as they are positioned relative to the ellipsoid.
+    If {@link Globe#terrainExaggeration} is <code>1.0</code> this value will have no effect.
+     */
+    terrainExaggerationRelativeHeight: number;
     /**
      * Gets an event that's raised when the length of the tile load queue has changed since the last render frame.  When the load queue is empty,
     all terrain and imagery for the current view have been loaded.  The event passes the new length of the tile load queue.
@@ -33130,7 +33138,7 @@ on a {@link Globe}.
  * // Add an OpenStreetMaps layer
 const imageryLayer = new Cesium.ImageryLayer(new Cesium.OpenStreetMapImageryProvider({
   url: "https://tile.openstreetmap.org/"
-})),
+}));
 scene.imageryLayers.add(imageryLayer);
  * @example
  * // Add Cesium ion's default world imagery layer
@@ -33141,11 +33149,11 @@ scene.imageryLayers.add(imageryLayer);
 const imageryLayer = Cesium.ImageryLayer.fromProviderAsync(Cesium.IonImageryProvider.fromAssetId(3812));
 imageryLayer.alpha = 0.5;
 scene.imageryLayers.add(imageryLayer);
- * @param imageryProvider - The imagery provider to use.
- * @param options - An object describing initialization options
+ * @param [imageryProvider] - The imagery provider to use.
+ * @param [options] - An object describing initialization options
  */
 export class ImageryLayer {
-    constructor(imageryProvider: ImageryProvider, options: ImageryLayer.ConstructorOptions);
+    constructor(imageryProvider?: ImageryProvider, options?: ImageryLayer.ConstructorOptions);
     /**
      * The alpha blending value of this layer, with 0.0 representing fully transparent and
     1.0 representing fully opaque.
@@ -39448,6 +39456,16 @@ export class Scene {
     other hand, increasing this will increase performance but may cause z-fighting among primitives close to the surface.
      */
     nearToFarDistance2D: number;
+    /**
+     * The vertical exaggeration of the scene.
+    When set to 1.0, no exaggeration is applied.
+     */
+    verticalExaggeration: number;
+    /**
+     * The reference height for vertical exaggeration of the scene.
+    When set to 0.0, the exaggeration is applied relative to the ellipsoid surface.
+     */
+    verticalExaggerationRelativeHeight: number;
     /**
      * This property is for debugging only; it is not for production use.
     <p>
