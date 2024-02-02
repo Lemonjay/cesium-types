@@ -1,4 +1,4 @@
-// Cesium.VERSION = 1.113.0
+// Cesium.VERSION = 1.114.0
 // tslint:disable-next-line:export-just-namespace
 export = Cesium;
 export as namespace Cesium;
@@ -4918,6 +4918,36 @@ export class CorridorOutlineGeometry {
 export function createGuid(): string;
 
 /**
+ * Creates a {@link CesiumTerrainProvider} instance for the {@link https://cesium.com/content/#cesium-world-bathymetry|Cesium World Bathymetry}.
+ * @example
+ * // Create Cesium World Bathymetry with default settings
+try {
+  const viewer = new Cesium.Viewer("cesiumContainer", {
+    terrainProvider: await Cesium.createWorldBathymetryAsync();
+  });
+} catch (error) {
+  console.log(error);
+}
+ * @example
+ * // Create Cesium World Bathymetry with normals.
+try {
+  const viewer1 = new Cesium.Viewer("cesiumContainer", {
+    terrainProvider: await Cesium.createWorldBathymetryAsync({
+      requestVertexNormals: true
+    });
+  });
+} catch (error) {
+  console.log(error);
+}
+ * @param [options] - Object with the following properties:
+ * @param [options.requestVertexNormals = false] - Flag that indicates if the client should request additional lighting information from the server if available.
+ * @returns A promise that resolves to the created CesiumTerrainProvider
+ */
+export function createWorldBathymetryAsync(options?: {
+    requestVertexNormals?: boolean;
+}): Promise<CesiumTerrainProvider>;
+
+/**
  * Creates a {@link CesiumTerrainProvider} instance for the {@link https://cesium.com/content/#cesium-world-terrain|Cesium World Terrain}.
  * @example
  * // Create Cesium World Terrain with default settings
@@ -7965,7 +7995,7 @@ export class GroundPolylineGeometry {
 
 /**
  * Defines a heading angle, pitch angle, and range in a local frame.
-Heading is the rotation from the local north direction where a positive angle is increasing eastward.
+Heading is the rotation from the local east direction where a positive angle is increasing southward.
 Pitch is the rotation from the local xy-plane. Positive pitch angles are above the plane. Negative pitch
 angles are below the plane. Range is the distance from the center of the frame.
  * @param [heading = 0.0] - The heading angle in radians.
@@ -7975,7 +8005,7 @@ angles are below the plane. Range is the distance from the center of the frame.
 export class HeadingPitchRange {
     constructor(heading?: number, pitch?: number, range?: number);
     /**
-     * Heading is the rotation from the local north direction where a positive angle is increasing eastward.
+     * Heading is the rotation from the local east direction where a positive angle is increasing southward.
      */
     heading: number;
     /**
@@ -13222,22 +13252,6 @@ export class PolygonGeometry {
      */
     static computeRectangleFromPositions(positions: Cartesian3[], ellipsoid?: Ellipsoid, arcType?: ArcType, result?: Rectangle): Rectangle;
     /**
-     * Returns the bounding rectangle given the provided options
-     * @param options - Object with the following properties:
-     * @param options.polygonHierarchy - A polygon hierarchy that can include holes.
-     * @param [options.granularity = Math.RADIANS_PER_DEGREE] - The distance, in radians, between each latitude and longitude. Determines the number of positions sampled.
-     * @param [options.arcType = ArcType.GEODESIC] - The type of line the polygon edges must follow. Valid options are {@link ArcType.GEODESIC} and {@link ArcType.RHUMB}.
-     * @param [options.ellipsoid = Ellipsoid.WGS84] - The ellipsoid to be used as a reference.
-     * @param [result] - An object in which to store the result.
-     * @returns The result rectangle
-     */
-    static computeRectangle(options: {
-        polygonHierarchy: PolygonHierarchy;
-        granularity?: number;
-        arcType?: ArcType;
-        ellipsoid?: Ellipsoid;
-    }, result?: Rectangle): Rectangle;
-    /**
      * Computes the geometric representation of a polygon, including its vertices, indices, and a bounding sphere.
      * @param polygonGeometry - A description of the polygon.
      * @returns The computed vertices and indices.
@@ -17519,7 +17533,7 @@ export namespace Transforms {
     function northWestUpToFixedFrame(origin: Cartesian3, ellipsoid?: Ellipsoid, result?: Matrix4): Matrix4;
     /**
      * Computes a 4x4 transformation matrix from a reference frame with axes computed from the heading-pitch-roll angles
-    centered at the provided origin to the provided ellipsoid's fixed reference frame. Heading is the rotation from the local north
+    centered at the provided origin to the provided ellipsoid's fixed reference frame. Heading is the rotation from the local east
     direction where a positive angle is increasing eastward. Pitch is the rotation from the local east-north plane. Positive pitch angles
     are above the plane. Negative pitch angles are below the plane. Roll is the first rotation applied about the local east axis.
      * @example
@@ -17541,7 +17555,7 @@ export namespace Transforms {
     function headingPitchRollToFixedFrame(origin: Cartesian3, headingPitchRoll: HeadingPitchRoll, ellipsoid?: Ellipsoid, fixedFrameTransform?: Transforms.LocalFrameToFixedFrame, result?: Matrix4): Matrix4;
     /**
      * Computes a quaternion from a reference frame with axes computed from the heading-pitch-roll angles
-    centered at the provided origin. Heading is the rotation from the local north
+    centered at the provided origin. Heading is the rotation from the local east
     direction where a positive angle is increasing eastward. Pitch is the rotation from the local east-north plane. Positive pitch angles
     are above the plane. Negative pitch angles are below the plane. Roll is the first rotation applied about the local east axis.
      * @example
@@ -17562,7 +17576,7 @@ export namespace Transforms {
      */
     function headingPitchRollQuaternion(origin: Cartesian3, headingPitchRoll: HeadingPitchRoll, ellipsoid?: Ellipsoid, fixedFrameTransform?: Transforms.LocalFrameToFixedFrame, result?: Quaternion): Quaternion;
     /**
-     * Computes heading-pitch-roll angles from a transform in a particular reference frame. Heading is the rotation from the local north
+     * Computes heading-pitch-roll angles from a transform in a particular reference frame. Heading is the rotation from the local east
     direction where a positive angle is increasing eastward. Pitch is the rotation from the local east-north plane. Positive pitch angles
     are above the plane. Negative pitch angles are below the plane. Roll is the first rotation applied about the local east axis.
      * @param transform - The transform
@@ -20612,7 +20626,7 @@ export namespace Entity {
      * @property [show] - A boolean value indicating if the entity and its children are displayed.
      * @property [description] - A string Property specifying an HTML description for this entity.
      * @property [position] - A Property specifying the entity position.
-     * @property [orientation] - A Property specifying the entity orientation.
+     * @property [orientation = Transforms.eastNorthUpToFixedFrame(position)] - A Property specifying the entity orientation in respect to Earth-fixed-Earth-centered (ECEF). If undefined, east-north-up at entity position is used.
      * @property [viewFrom] - A suggested initial offset for viewing this object.
      * @property [parent] - A parent entity to associate with this entity.
      * @property [billboard] - A billboard to associate with this entity.
@@ -20641,8 +20655,8 @@ export namespace Entity {
         show?: boolean;
         description?: Property | string;
         position?: PositionProperty | Cartesian3;
-        orientation?: Property;
-        viewFrom?: Property;
+        orientation?: Property | Quaternion;
+        viewFrom?: Property | Cartesian3;
         parent?: Entity;
         billboard?: BillboardGraphics | BillboardGraphics.ConstructorOptions;
         box?: BoxGraphics | BoxGraphics.ConstructorOptions;
@@ -20759,7 +20773,8 @@ export class Entity {
      */
     tileset: Cesium3DTilesetGraphics | undefined;
     /**
-     * Gets or sets the orientation.
+     * Gets or sets the orientation in respect to Earth-fixed-Earth-centered (ECEF).
+    Defaults to east-north-up at entity position.
      */
     orientation: Property | undefined;
     /**
@@ -21402,8 +21417,6 @@ export class GeometryUpdater {
     readonly classificationTypeProperty: Property;
     /**
      * Gets a value indicating if the geometry is time-varying.
-    If true, all visualization is delegated to a DynamicGeometryUpdater
-    returned by GeometryUpdater#createDynamicUpdater.
      */
     readonly isDynamic: boolean;
     /**
@@ -23361,8 +23374,6 @@ export class PolylineGeometryUpdater {
     readonly classificationTypeProperty: Property;
     /**
      * Gets a value indicating if the geometry is time-varying.
-    If true, all visualization is delegated to the {@link DynamicGeometryUpdater}
-    returned by GeometryUpdater#createDynamicUpdater.
      */
     readonly isDynamic: boolean;
     /**
@@ -25575,6 +25586,81 @@ export namespace ArcGisMapService {
 }
 
 /**
+ * Common atmosphere settings used by 3D Tiles and models for rendering sky atmosphere, ground atmosphere, and fog.
+
+<p>
+This class is not to be confused with {@link SkyAtmosphere}, which is responsible for rendering the sky.
+</p>
+<p>
+While the atmosphere settings affect the color of fog, see {@link Fog} to control how fog is rendered.
+</p>
+ * @example
+ * // Turn on dynamic atmosphere lighting using the sun direction
+scene.atmosphere.dynamicLighting = Cesium.DynamicAtmosphereLightingType.SUNLIGHT;
+ * @example
+ * // Turn on dynamic lighting using whatever light source is in the scene
+scene.light = new Cesium.DirectionalLight({
+  direction: new Cesium.Cartesian3(1, 0, 0)
+});
+scene.atmosphere.dynamicLighting = Cesium.DynamicAtmosphereLightingType.SCENE_LIGHT;
+ * @example
+ * // Adjust the color of the atmosphere effects.
+scene.atmosphere.hueShift = 0.4; // Cycle 40% around the color wheel
+scene.atmosphere.brightnessShift = 0.25; // Increase the brightness
+scene.atmosphere.saturationShift = -0.1; // Desaturate the colors
+ */
+export class Atmosphere {
+    constructor();
+    /**
+     * The intensity of the light that is used for computing the ground atmosphere color.
+     */
+    lightIntensity: number;
+    /**
+     * The Rayleigh scattering coefficient used in the atmospheric scattering equations for the ground atmosphere.
+     */
+    rayleighCoefficient: Cartesian3;
+    /**
+     * The Mie scattering coefficient used in the atmospheric scattering equations for the ground atmosphere.
+     */
+    mieCoefficient: Cartesian3;
+    /**
+     * The Rayleigh scale height used in the atmospheric scattering equations for the ground atmosphere, in meters.
+     */
+    rayleighScaleHeight: number;
+    /**
+     * The Mie scale height used in the atmospheric scattering equations for the ground atmosphere, in meters.
+     */
+    mieScaleHeight: number;
+    /**
+     * The anisotropy of the medium to consider for Mie scattering.
+    <p>
+    Valid values are between -1.0 and 1.0.
+    </p>
+     */
+    mieAnisotropy: number;
+    /**
+     * The hue shift to apply to the atmosphere. Defaults to 0.0 (no shift).
+    A hue shift of 1.0 indicates a complete rotation of the hues available.
+     */
+    hueShift: number;
+    /**
+     * The saturation shift to apply to the atmosphere. Defaults to 0.0 (no shift).
+    A saturation shift of -1.0 is monochrome.
+     */
+    saturationShift: number;
+    /**
+     * The brightness shift to apply to the atmosphere. Defaults to 0.0 (no shift).
+    A brightness shift of -1.0 is complete darkness, which will let space show through.
+     */
+    brightnessShift: number;
+    /**
+     * When not DynamicAtmosphereLightingType.NONE, the selected light source will
+    be used for dynamically lighting all atmosphere-related rendering effects.
+     */
+    dynamicLighting: DynamicAtmosphereLightingType;
+}
+
+/**
  * An enum describing the x, y, and z axes and helper conversion functions.
  */
 export enum Axis {
@@ -26591,7 +26677,7 @@ export class Camera {
     /**
      * If set, the camera will not be able to rotate past this axis in either direction.
      */
-    constrainedAxis: Cartesian3;
+    constrainedAxis: Cartesian3 | undefined;
     /**
      * The factor multiplied by the the map size used to determine where to clamp the camera position
     when zooming out from the surface. The default is 1.5. Only valid for 2D and the map is rotatable.
@@ -27872,10 +27958,10 @@ export namespace Cesium3DTileset {
      * @property [preloadWhenHidden = false] - Preload tiles when <code>tileset.show</code> is <code>false</code>. Loads tiles as if the tileset is visible but does not render them.
      * @property [preloadFlightDestinations = true] - Optimization option. Preload tiles at the camera's flight destination while the camera is in flight.
      * @property [preferLeaves = false] - Optimization option. Prefer loading of leaves first.
-     * @property [dynamicScreenSpaceError = false] - Optimization option. Reduce the screen space error for tiles that are further away from the camera.
-     * @property [dynamicScreenSpaceErrorDensity = 0.00278] - Density used to adjust the dynamic screen space error, similar to fog density.
-     * @property [dynamicScreenSpaceErrorFactor = 4.0] - A factor used to increase the computed dynamic screen space error.
-     * @property [dynamicScreenSpaceErrorHeightFalloff = 0.25] - A ratio of the tileset's height at which the density starts to falloff.
+     * @property [dynamicScreenSpaceError = true] - Optimization option. For street-level horizon views, use lower resolution tiles far from the camera. This reduces the amount of data loaded and improves tileset loading time with a slight drop in visual quality in the distance.
+     * @property [dynamicScreenSpaceErrorDensity = 2.0e-4] - Similar to {@link Fog#density}, this option controls the camera distance at which the {@link Cesium3DTileset#dynamicScreenSpaceError} optimization applies. Larger values will cause tiles closer to the camera to be affected.
+     * @property [dynamicScreenSpaceErrorFactor = 24.0] - A parameter that controls the intensity of the {@link Cesium3DTileset#dynamicScreenSpaceError} optimization for tiles on the horizon. Larger values cause lower resolution tiles to load, improving runtime performance at a slight reduction of visual quality.
+     * @property [dynamicScreenSpaceErrorHeightFalloff = 0.25] - A ratio of the tileset's height that determines where "street level" camera views occur. When the camera is below this height, the {@link Cesium3DTileset#dynamicScreenSpaceError} optimization will have the maximum effect, and it will roll off above this value.
      * @property [progressiveResolutionHeightFraction = 0.3] - Optimization option. If between (0.0, 0.5], tiles at or above the screen space error for the reduced screen resolution of <code>progressiveResolutionHeightFraction*screenHeight</code> will be prioritized first. This can help get a quick layer of tiles down while full resolution tiles continue to load.
      * @property [foveatedScreenSpaceError = true] - Optimization option. Prioritize loading tiles in the center of the screen by temporarily raising the screen space error for tiles around the edge of the screen. Screen space error returns to normal once all the tiles in the center of the screen as determined by the {@link Cesium3DTileset#foveatedConeSize} are loaded.
      * @property [foveatedConeSize = 0.1] - Optimization option. Used when {@link Cesium3DTileset#foveatedScreenSpaceError} is true to control the cone size that determines which tiles are deferred. Tiles that are inside this cone are loaded immediately. Tiles outside the cone are potentially deferred based on how far outside the cone they are and their screen space error. This is controlled by {@link Cesium3DTileset#foveatedInterpolationCallback} and {@link Cesium3DTileset#foveatedMinimumScreenSpaceErrorRelaxation}. Setting this to 0.0 means the cone will be the line formed by the camera position and its view direction. Setting this to 1.0 means the cone encompasses the entire field of view of the camera, disabling the effect.
@@ -27904,11 +27990,13 @@ export namespace Cesium3DTileset {
      * @property [instanceFeatureIdLabel = "instanceFeatureId_0"] - Label of the instance feature ID set used for picking and styling. If instanceFeatureIdLabel is set to an integer N, it is converted to the string "instanceFeatureId_N" automatically. If both per-primitive and per-instance feature IDs are present, the instance feature IDs take priority.
      * @property [showCreditsOnScreen = false] - Whether to display the credits of this tileset on screen.
      * @property [splitDirection = SplitDirection.NONE] - The {@link SplitDirection} split to apply to this tileset.
-     * @property [projectTo2D = false] - Whether to accurately project the tileset to 2D. If this is true, the tileset will be projected accurately to 2D, but it will use more memory to do so. If this is false, the tileset will use less memory and will still render in 2D / CV mode, but its projected positions may be inaccurate. This cannot be set after the tileset has loaded.
+     * @property [disableCollision = false] - Whether to turn off collisions for camera collisions or picking. While this is <code>true</code> the camera will be allowed to go in or below the tileset surface if {@link ScreenSpaceCameraController#enableCollisionDetection} is true.
+     * @property [projectTo2D = false] - Whether to accurately project the tileset to 2D. If this is true, the tileset will be projected accurately to 2D, but it will use more memory to do so. If this is false, the tileset will use less memory and will still render in 2D / CV mode, but its projected positions may be inaccurate. This cannot be set after the tileset has been created.
+     * @property [enablePick = false] - Whether to allow collision and CPU picking with <code>pick</code> when using WebGL 1. If using WebGL 2 or above, this option will be ignored. If using WebGL 1 and this is true, the <code>pick</code> operation will work correctly, but it will use more memory to do so. If running with WebGL 1 and this is false, the model will use less memory, but <code>pick</code> will always return <code>undefined</code>. This cannot be set after the tileset has loaded.
      * @property [debugHeatmapTilePropertyName] - The tile variable to colorize as a heatmap. All rendered tiles will be colorized relative to each other's specified variable value.
      * @property [debugFreezeFrame = false] - For debugging only. Determines if only the tiles from last frame should be used for rendering.
      * @property [debugColorizeTiles = false] - For debugging only. When true, assigns a random color to each tile.
-     * @property [enableDebugWireframe] - For debugging only. This must be true for debugWireframe to work in WebGL1. This cannot be set after the tileset has loaded.
+     * @property [enableDebugWireframe = false] - For debugging only. This must be true for debugWireframe to work in WebGL1. This cannot be set after the tileset has been created.
      * @property [debugWireframe = false] - For debugging only. When true, render's each tile's content as a wireframe.
      * @property [debugShowBoundingVolume = false] - For debugging only. When true, renders the bounding volume for each tile.
      * @property [debugShowContentBoundingVolume = false] - For debugging only. When true, renders the bounding volume for each tile's content.
@@ -27965,7 +28053,9 @@ export namespace Cesium3DTileset {
         instanceFeatureIdLabel?: string | number;
         showCreditsOnScreen?: boolean;
         splitDirection?: SplitDirection;
+        disableCollision?: boolean;
         projectTo2D?: boolean;
+        enablePick?: boolean;
         debugHeatmapTilePropertyName?: string;
         debugFreezeFrame?: boolean;
         debugColorizeTiles?: boolean;
@@ -28006,6 +28096,17 @@ This object is normally not instantiated directly, use {@link Cesium3DTileset.fr
   console.error(`Error creating tileset: ${error}`);
 }
  * @example
+ * // Allow camera to go inside and under 3D tileset
+try {
+  const tileset = await Cesium.Cesium3DTileset.fromUrl(
+     "http://localhost:8002/tilesets/Seattle/tileset.json",
+     { disableCollision: true }
+  );
+  scene.primitives.add(tileset);
+} catch (error) {
+  console.error(`Error creating tileset: ${error}`);
+}
+ * @example
  * // Common setting for the skipLevelOfDetail optimization
 const tileset = await Cesium.Cesium3DTileset.fromUrl(
   "http://localhost:8002/tilesets/Seattle/tileset.json", {
@@ -28023,8 +28124,8 @@ scene.primitives.add(tileset);
 const tileset = await Cesium.Cesium3DTileset.fromUrl(
   "http://localhost:8002/tilesets/Seattle/tileset.json", {
      dynamicScreenSpaceError: true,
-     dynamicScreenSpaceErrorDensity: 0.00278,
-     dynamicScreenSpaceErrorFactor: 4.0,
+     dynamicScreenSpaceErrorDensity: 2.0e-4,
+     dynamicScreenSpaceErrorFactor: 24.0,
      dynamicScreenSpaceErrorHeightFalloff: 0.25
 });
 scene.primitives.add(tileset);
@@ -28057,11 +28158,11 @@ export class Cesium3DTileset {
      */
     preloadFlightDestinations: boolean;
     /**
-     * Optimization option. Whether the tileset should refine based on a dynamic screen space error. Tiles that are further
-    away will be rendered with lower detail than closer tiles. This improves performance by rendering fewer
-    tiles and making less requests, but may result in a slight drop in visual quality for tiles in the distance.
-    The algorithm is biased towards "street views" where the camera is close to the ground plane of the tileset and looking
-    at the horizon. In addition results are more accurate for tightly fitting bounding volumes like box and region.
+     * Optimization option. For street-level horizon views, use lower resolution tiles far from the camera. This reduces
+    the amount of data loaded and improves tileset loading time with a slight drop in visual quality in the distance.
+    <p>
+    This optimization is strongest when the camera is close to the ground plane of the tileset and looking at the
+    horizon. Furthermore, the results are more accurate for tightly fitting bounding volumes like box and region.
      */
     dynamicScreenSpaceError: boolean;
     /**
@@ -28083,33 +28184,43 @@ export class Cesium3DTileset {
      */
     foveatedTimeDelay: number;
     /**
-     * A scalar that determines the density used to adjust the dynamic screen space error, similar to {@link Fog}. Increasing this
-    value has the effect of increasing the maximum screen space error for all tiles, but in a non-linear fashion.
-    The error starts at 0.0 and increases exponentially until a midpoint is reached, and then approaches 1.0 asymptotically.
-    This has the effect of keeping high detail in the closer tiles and lower detail in the further tiles, with all tiles
-    beyond a certain distance all roughly having an error of 1.0.
+     * Similar to {@link Fog#density}, this option controls the camera distance at which the {@link Cesium3DTileset#dynamicScreenSpaceError}
+    optimization applies. Larger values will cause tiles closer to the camera to be affected. This value must be
+    non-negative.
     <p>
-    The dynamic error is in the range [0.0, 1.0) and is multiplied by <code>dynamicScreenSpaceErrorFactor</code> to produce the
-    final dynamic error. This dynamic error is then subtracted from the tile's actual screen space error.
+    This optimization works by rolling off the tile screen space error (SSE) with camera distance like a bell curve.
+    This has the effect of selecting lower resolution tiles far from the camera. Near the camera, no adjustment is
+    made. For tiles further away, the SSE is reduced by up to {@link Cesium3DTileset#dynamicScreenSpaceErrorFactor}
+    (measured in pixels of error).
     </p>
     <p>
-    Increasing <code>dynamicScreenSpaceErrorDensity</code> has the effect of moving the error midpoint closer to the camera.
-    It is analogous to moving fog closer to the camera.
+    Increasing the density makes the bell curve narrower so tiles closer to the camera are affected. This is analagous
+    to moving fog closer to the camera.
+    </p>
+    <p>
+    When the density is 0, the optimization will have no effect on the tileset.
     </p>
      */
     dynamicScreenSpaceErrorDensity: number;
     /**
-     * A factor used to increase the screen space error of tiles for dynamic screen space error. As this value increases less tiles
-    are requested for rendering and tiles in the distance will have lower detail. If set to zero, the feature will be disabled.
+     * A parameter that controls the intensity of the {@link Cesium3DTileset#dynamicScreenSpaceError} optimization for
+    tiles on the horizon. Larger values cause lower resolution tiles to load, improving runtime performance at a slight
+    reduction of visual quality. The value must be non-negative.
+    <p>
+    More specifically, this parameter represents the maximum adjustment to screen space error (SSE) in pixels for tiles
+    far away from the camera. See {@link Cesium3DTileset#dynamicScreenSpaceErrorDensity} for more details about how
+    this optimization works.
+    </p>
+    <p>
+    When the SSE factor is set to 0, the optimization will have no effect on the tileset.
+    </p>
      */
     dynamicScreenSpaceErrorFactor: number;
     /**
-     * A ratio of the tileset's height at which the density starts to falloff. If the camera is below this height the
-    full computed density is applied, otherwise the density falls off. This has the effect of higher density at
-    street level views.
+     * A ratio of the tileset's height that determines "street level" for the {@link Cesium3DTileset#dynamicScreenSpaceError}
+    optimization. When the camera is below this height, the dynamic screen space error optimization will have the maximum
+    effect, and it will roll off above this value. Valid values are between 0.0 and 1.0.
     <p>
-    Valid values are between 0.0 and 1.0.
-    </p>
      */
     dynamicScreenSpaceErrorHeightFalloff: number;
     /**
@@ -28345,6 +28456,10 @@ export class Cesium3DTileset {
      * The {@link SplitDirection} to apply to this tileset.
      */
     splitDirection: SplitDirection;
+    /**
+     * Whether to turn off collisions for camera collisions or picking. While this is  <code>true</code> the camera will be allowed to go in or below the tileset surface if {@link ScreenSpaceCameraController#enableCollisionDetection} is true.
+     */
+    disableCollision: boolean;
     /**
      * This property is for debugging only; it is not optimized for production use.
     <p>
@@ -28613,6 +28728,7 @@ export class Cesium3DTileset {
         <li>The glTF cannot contain morph targets, skins, or animations.</li>
         <li>The glTF cannot contain the <code>EXT_mesh_gpu_instancing</code> extension.</li>
         <li>Only meshes with TRIANGLES can be used to classify other assets.</li>
+        <li>The meshes must be watertight.</li>
         <li>The <code>POSITION</code> semantic is required.</li>
         <li>If <code>_BATCHID</code>s and an index buffer are both present, all indices with the same batch id must occupy contiguous sections of the index buffer.</li>
         <li>If <code>_BATCHID</code>s are present with no index buffer, all positions with the same batch id must occupy contiguous sections of the position buffer.</li>
@@ -28621,6 +28737,9 @@ export class Cesium3DTileset {
     <p>
     Additionally, classification is not supported for points or instanced 3D
     models.
+    </p>
+    <p>
+    The 3D Tiles or terrain receiving the classification must be opaque.
     </p>
      */
     readonly classificationType: ClassificationType;
@@ -28734,8 +28853,8 @@ export class Cesium3DTileset {
     const tileset = await Cesium.Cesium3DTileset.fromUrl(
       "http://localhost:8002/tilesets/Seattle/tileset.json", {
          dynamicScreenSpaceError: true,
-         dynamicScreenSpaceErrorDensity: 0.00278,
-         dynamicScreenSpaceErrorFactor: 4.0,
+         dynamicScreenSpaceErrorDensity: 2.0e-4,
+         dynamicScreenSpaceErrorFactor: 24.0,
          dynamicScreenSpaceErrorHeightFalloff: 0.25
     });
     scene.primitives.add(tileset);
@@ -28790,6 +28909,18 @@ export class Cesium3DTileset {
      * tileset = tileset && tileset.destroy();
      */
     destroy(): void;
+    /**
+     * Get the height of the loaded surface at a given cartographic. This function will only take into account meshes for loaded tiles, not neccisarily the most detailed tiles available for a tileset. This function will always return undefined when sampling a point cloud.
+     * @example
+     * const tileset = await Cesium.Cesium3DTileset.fromIonAssetId(124624234);
+    scene.primitives.add(tileset);
+    
+    const height = tileset.getHeight(scene.camera.positionCartographic, scene);
+     * @param cartographic - The cartographic for which to find the height.
+     * @param scene - The scene where visualization is taking place.
+     * @returns The height of the cartographic or undefined if it could not be found.
+     */
+    getHeight(cartographic: Cartographic, scene: Scene): number | undefined;
 }
 
 /**
@@ -30997,6 +31128,28 @@ export class DiscardMissingTileImagePolicy {
 }
 
 /**
+ * Atmosphere lighting effects (sky atmosphere, ground atmosphere, fog) can be
+further modified with dynamic lighting from the sun or other light source
+that changes over time. This enum determines which light source to use.
+ */
+export enum DynamicAtmosphereLightingType {
+    /**
+     * Do not use dynamic atmosphere lighting. Atmosphere lighting effects will
+    be lit from directly above rather than using the scene's light source.
+     */
+    NONE = 0,
+    /**
+     * Use the scene's current light source for dynamic atmosphere lighting.
+     */
+    SCENE_LIGHT = 1,
+    /**
+     * Force the dynamic atmosphere lighting to always use the sunlight direction,
+    even if the scene uses a different light source.
+     */
+    SUNLIGHT = 2
+}
+
+/**
  * An appearance for geometry on the surface of the ellipsoid like {@link PolygonGeometry}
 and {@link RectangleGeometry}, which supports all materials like {@link MaterialAppearance}
 with {@link MaterialAppearance.MaterialSupport.ALL}.  However, this appearance requires
@@ -32605,13 +32758,29 @@ export enum HeightReference {
      */
     NONE = 0,
     /**
-     * The position is clamped to the terrain.
+     * The position is clamped to the terrain and 3D Tiles.
      */
     CLAMP_TO_GROUND = 1,
     /**
-     * The position height is the height above the terrain.
+     * The position height is the height above the terrain and 3D Tiles.
      */
-    RELATIVE_TO_GROUND = 2
+    RELATIVE_TO_GROUND = 2,
+    /**
+     * The position is clamped to terain.
+     */
+    CLAMP_TO_TERRAIN = 3,
+    /**
+     * The position height is the height above terrain.
+     */
+    RELATIVE_TO_TERRAIN = 4,
+    /**
+     * The position is clamped to 3D Tiles.
+     */
+    CLAMP_TO_3D_TILE = 5,
+    /**
+     * The position height is the height above 3D Tiles.
+     */
+    RELATIVE_TO_3D_TILE = 6
 }
 
 /**
@@ -36108,10 +36277,14 @@ export class Model {
         <li>The glTF cannot contain morph targets, skins, or animations.</li>
         <li>The glTF cannot contain the <code>EXT_mesh_gpu_instancing</code> extension.</li>
         <li>Only meshes with TRIANGLES can be used to classify other assets.</li>
-        <li>The position attribute is required.</li>
+        <li>The meshes must be watertight.</li>
+        <li>The POSITION attribute is required.</li>
         <li>If feature IDs and an index buffer are both present, all indices with the same feature id must occupy contiguous sections of the index buffer.</li>
         <li>If feature IDs are present without an index buffer, all positions with the same feature id must occupy contiguous sections of the position buffer.</li>
     </ul>
+    </p>
+    <p>
+    The 3D Tiles or terrain receiving the classification must be opaque.
     </p>
      */
     readonly classificationType: ClassificationType;
@@ -36284,6 +36457,7 @@ export class Model {
      * @param [options.showCreditsOnScreen = false] - Whether to display the credits of this model on screen.
      * @param [options.splitDirection = SplitDirection.NONE] - The {@link SplitDirection} split to apply to this model.
      * @param [options.projectTo2D = false] - Whether to accurately project the model's positions in 2D. If this is true, the model will be projected accurately to 2D, but it will use more memory to do so. If this is false, the model will use less memory and will still render in 2D / CV mode, but its positions may be inaccurate. This disables minimumPixelSize and prevents future modification to the model matrix. This also cannot be set after the model has loaded.
+     * @param [options.enablePick = false] - Whether to allow with CPU picking with <code>pick</code> when not using WebGL 2 or above. If using WebGL 2 or above, this option will be ignored. If using WebGL 1 and this is true, the <code>pick</code> operation will work correctly, but it will use more memory to do so. If running with WebGL 1 and this is false, the model will use less memory, but <code>pick</code> will always return <code>undefined</code>. This cannot be set after the model has loaded.
      * @param [options.featureIdLabel = "featureId_0"] - Label of the feature ID set to use for picking and styling. For EXT_mesh_features, this is the feature ID's label property, or "featureId_N" (where N is the index in the featureIds array) when not specified. EXT_feature_metadata did not have a label field, so such feature ID sets are always labeled "featureId_N" where N is the index in the list of all feature Ids, where feature ID attributes are listed before feature ID textures. If featureIdLabel is an integer N, it is converted to the string "featureId_N" automatically. If both per-primitive and per-instance feature IDs are present, the instance feature IDs take priority.
      * @param [options.instanceFeatureIdLabel = "instanceFeatureId_0"] - Label of the instance feature ID set used for picking and styling. If instanceFeatureIdLabel is set to an integer N, it is converted to the string "instanceFeatureId_N" automatically. If both per-primitive and per-instance feature IDs are present, the instance feature IDs take priority.
      * @param [options.pointCloudShading] - Options for constructing a {@link PointCloudShading} object to control point attenuation and lighting.
@@ -36334,6 +36508,7 @@ export class Model {
         showCreditsOnScreen?: boolean;
         splitDirection?: SplitDirection;
         projectTo2D?: boolean;
+        enablePick?: boolean;
         featureIdLabel?: string | number;
         instanceFeatureIdLabel?: string | number;
         pointCloudShading?: any;
@@ -39555,6 +39730,11 @@ export class Scene {
      */
     pickTranslucentDepth: boolean;
     /**
+     * Settings for atmosphere lighting effects affecting 3D Tiles and model rendering. This is not to be confused with
+    {@link Scene#skyAtmosphere} which is responsible for rendering the sky.
+     */
+    atmosphere: Atmosphere;
+    /**
      * Blends the atmosphere to geometry far from the camera for horizon views. Allows for additional
     performance improvements by rendering less geometry and dispatching less terrain requests.
      */
@@ -40907,6 +41087,44 @@ export class Terrain {
     static fromWorldTerrain(options?: {
         requestVertexNormals?: boolean;
         requestWaterMask?: boolean;
+    }): Terrain;
+    /**
+     * Creates a {@link Terrain} instance for {@link https://cesium.com/content/#cesium-world-bathymetry|Cesium World Bathymetry}.
+     * @example
+     * // Create Cesium World Bathymetry with default settings
+    const viewer = new Cesium.Viewer("cesiumContainer", {
+      terrain: Cesium.Terrain.fromWorldBathymetry)
+    });
+     * @example
+     * // Create Cesium World Terrain with normals.
+    const viewer1 = new Cesium.Viewer("cesiumContainer", {
+      terrain: Cesium.Terrain.fromWorldBathymetry({
+         requestVertexNormals: true
+       });
+    });
+     * @example
+     * // Handle loading events
+    const bathymetry = Cesium.Terrain.fromWorldBathymetry();
+    
+    scene.setTerrain(bathymetry);
+    
+    bathymetry.readyEvent.addEventListener(provider => {
+      scene.globe.enableLighting = true;
+    
+      bathymetry.provider.errorEvent.addEventListener(error => {
+        alert(`Encountered an error while loading bathymetric terrain tiles! ${error}`);
+      });
+    });
+    
+    bathymetry.errorEvent.addEventListener(error => {
+      alert(`Encountered an error while creating bathymetric terrain! ${error}`);
+    });
+     * @param [options] - Object with the following properties:
+     * @param [options.requestVertexNormals = false] - Flag that indicates if the client should request additional lighting information from the server if available.
+     * @returns An asynchronous helper object for a CesiumTerrainProvider
+     */
+    static fromWorldBathymetry(options?: {
+        requestVertexNormals?: boolean;
     }): Terrain;
 }
 
