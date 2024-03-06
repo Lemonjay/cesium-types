@@ -1,4 +1,4 @@
-// Cesium.VERSION = 1.114.0
+// Cesium.VERSION = 1.115.0
 // tslint:disable-next-line:export-just-namespace
 export = Cesium;
 export as namespace Cesium;
@@ -5328,7 +5328,6 @@ export function defaultValue(a: any, b: any): any;
 namespace defaultValue {
     const EMPTY_OBJECT: any;
 }
-
 
 /**
  * @example
@@ -16468,6 +16467,18 @@ export class Spline {
 }
 
 /**
+ * Converts the value from sRGB color space to linear color space.
+ * @example
+ * const srgbColor = [0.5, 0.5, 0.5];
+const linearColor = srgbColor.map(function (c) {
+    return Cesium.srgbToLinear(c);
+});
+ * @param value - The color value in sRGB color space.
+ * @returns Returns the color value in linear color space.
+ */
+export function srgbToLinear(value: number): number;
+
+/**
  * A spline that is composed of piecewise constants representing a step function.
  * @example
  * const times = [ 0.0, 1.5, 3.0, 4.5, 6.0 ];
@@ -21463,6 +21474,8 @@ export class GeometryUpdater {
      */
     destroy(): void;
 }
+
+export const geometryUpdaters: GeometryUpdater[];
 
 /**
  * A general purpose visualizer for geometry represented by {@link Primitive} instances.
@@ -27990,7 +28003,8 @@ export namespace Cesium3DTileset {
      * @property [instanceFeatureIdLabel = "instanceFeatureId_0"] - Label of the instance feature ID set used for picking and styling. If instanceFeatureIdLabel is set to an integer N, it is converted to the string "instanceFeatureId_N" automatically. If both per-primitive and per-instance feature IDs are present, the instance feature IDs take priority.
      * @property [showCreditsOnScreen = false] - Whether to display the credits of this tileset on screen.
      * @property [splitDirection = SplitDirection.NONE] - The {@link SplitDirection} split to apply to this tileset.
-     * @property [disableCollision = false] - Whether to turn off collisions for camera collisions or picking. While this is <code>true</code> the camera will be allowed to go in or below the tileset surface if {@link ScreenSpaceCameraController#enableCollisionDetection} is true.
+     * @property [enableCollision = false] - When <code>true</code>, enables collisions for camera or CPU picking. While this is <code>true</code> the camera will be prevented from going below the tileset surface if {@link ScreenSpaceCameraController#enableCollisionDetection} is true.
+     * @property [disableCollision = true] - Whether to turn off collisions for camera collisions or picking. While this is <code>true</code> the camera will be allowed to go in or below the tileset surface if {@link ScreenSpaceCameraController#enableCollisionDetection} is true. Deprecated.
      * @property [projectTo2D = false] - Whether to accurately project the tileset to 2D. If this is true, the tileset will be projected accurately to 2D, but it will use more memory to do so. If this is false, the tileset will use less memory and will still render in 2D / CV mode, but its projected positions may be inaccurate. This cannot be set after the tileset has been created.
      * @property [enablePick = false] - Whether to allow collision and CPU picking with <code>pick</code> when using WebGL 1. If using WebGL 2 or above, this option will be ignored. If using WebGL 1 and this is true, the <code>pick</code> operation will work correctly, but it will use more memory to do so. If running with WebGL 1 and this is false, the model will use less memory, but <code>pick</code> will always return <code>undefined</code>. This cannot be set after the tileset has loaded.
      * @property [debugHeatmapTilePropertyName] - The tile variable to colorize as a heatmap. All rendered tiles will be colorized relative to each other's specified variable value.
@@ -28053,6 +28067,7 @@ export namespace Cesium3DTileset {
         instanceFeatureIdLabel?: string | number;
         showCreditsOnScreen?: boolean;
         splitDirection?: SplitDirection;
+        enableCollision?: boolean;
         disableCollision?: boolean;
         projectTo2D?: boolean;
         enablePick?: boolean;
@@ -28096,11 +28111,11 @@ This object is normally not instantiated directly, use {@link Cesium3DTileset.fr
   console.error(`Error creating tileset: ${error}`);
 }
  * @example
- * // Allow camera to go inside and under 3D tileset
+ * // Turn on camera collisions with the tileset.
 try {
   const tileset = await Cesium.Cesium3DTileset.fromUrl(
      "http://localhost:8002/tilesets/Seattle/tileset.json",
-     { disableCollision: true }
+     { enableCollision: true }
   );
   scene.primitives.add(tileset);
 } catch (error) {
@@ -28457,9 +28472,9 @@ export class Cesium3DTileset {
      */
     splitDirection: SplitDirection;
     /**
-     * Whether to turn off collisions for camera collisions or picking. While this is  <code>true</code> the camera will be allowed to go in or below the tileset surface if {@link ScreenSpaceCameraController#enableCollisionDetection} is true.
+     * If <code>true</code>, allows collisions for camera collisions or picking. While this is  <code>true</code> the camera will be prevented from going in or below the tileset surface if {@link ScreenSpaceCameraController#enableCollisionDetection} is true. This can have performance implecations if the tileset contains tile with a larger number of vertices.
      */
-    disableCollision: boolean;
+    enableCollision: boolean;
     /**
      * This property is for debugging only; it is not optimized for production use.
     <p>
@@ -28541,6 +28556,10 @@ export class Cesium3DTileset {
      * Function for examining vector lines as they are being streamed.
      */
     examineVectorLinesFunction: (...params: any[]) => any;
+    /**
+     * Whether to turn off collisions for camera collisions or picking. While this is <code>true</code> the camera will be allowed to go in or below the tileset surface if {@link ScreenSpaceCameraController#enableCollisionDetection} is true.
+     */
+    disableCollision: boolean;
     /**
      * Gets the tileset's asset object property, which contains metadata about the tileset.
     <p>
@@ -32811,18 +32830,41 @@ export enum HorizontalOrigin {
 export namespace I3SDataProvider {
     /**
      * Initialization options for the I3SDataProvider constructor
+     * @example
+     * // Increase LOD by reducing SSE
+    const cesium3dTilesetOptions = {
+      maximumScreenSpaceError: 1,
+    };
+    const i3sOptions = {
+      cesium3dTilesetOptions: cesium3dTilesetOptions,
+    };
+     * @example
+     * // Set a custom outline color to replace the color defined in I3S symbology
+    const cesium3dTilesetOptions = {
+      outlineColor: Cesium.Color.BLUE,
+    };
+    const i3sOptions = {
+      cesium3dTilesetOptions: cesium3dTilesetOptions,
+      applySymbology: true,
+    };
      * @property [name] - The name of the I3S dataset.
      * @property [show = true] - Determines if the dataset will be shown.
      * @property [geoidTiledTerrainProvider] - Tiled elevation provider describing an Earth Gravitational Model. If defined, geometry will be shifted based on the offsets given by this provider. Required to position I3S data sets with gravity-related height at the correct location.
-     * @property [traceFetches = false] - Debug option. When true, log a message whenever an I3S tile is fetched.
      * @property [cesium3dTilesetOptions] - Object containing options to pass to an internally created {@link Cesium3DTileset}. See {@link Cesium3DTileset} for list of valid properties. All options can be used with the exception of <code>url</code> and <code>show</code> which are overridden by values from I3SDataProvider.
+     * @property [showFeatures = false] - Determines if the features will be shown.
+     * @property [adjustMaterialAlphaMode = false] - The option to adjust the alpha mode of the material based on the transparency of the vertex color. When <code>true</code>, the alpha mode of the material (if not defined) will be set to BLEND for geometry with any transparency in the color vertex attribute.
+     * @property [applySymbology = false] - Determines if the I3S symbology will be parsed and applied for the layers.
+     * @property [calculateNormals = false] - Determines if the flat normals will be generated for I3S geometry without normals.
      */
     type ConstructorOptions = {
         name?: string;
         show?: boolean;
         geoidTiledTerrainProvider?: ArcGISTiledElevationTerrainProvider | Promise<ArcGISTiledElevationTerrainProvider>;
-        traceFetches?: boolean;
         cesium3dTilesetOptions?: Cesium3DTileset.ConstructorOptions;
+        showFeatures?: boolean;
+        adjustMaterialAlphaMode?: boolean;
+        applySymbology?: boolean;
+        calculateNormals?: boolean;
     };
 }
 
@@ -32870,10 +32912,6 @@ export class I3SDataProvider {
      */
     show: boolean;
     /**
-     * Gets or sets debugging and tracing of I3S fetches.
-     */
-    traceFetches: boolean;
-    /**
      * The terrain provider referencing the GEOID service to be used for orthometric to ellipsoidal conversion.
      */
     readonly geoidTiledTerrainProvider: ArcGISTiledElevationTerrainProvider;
@@ -32881,6 +32919,10 @@ export class I3SDataProvider {
      * Gets the collection of layers.
      */
     readonly layers: I3SLayer[];
+    /**
+     * Gets the collection of building sublayers.
+     */
+    readonly sublayers: I3SSublayer[];
     /**
      * Gets the I3S data for this object.
      */
@@ -32893,6 +32935,22 @@ export class I3SDataProvider {
      * The resource used to fetch the I3S dataset.
      */
     readonly resource: Resource;
+    /**
+     * Determines if the features will be shown.
+     */
+    readonly showFeatures: boolean;
+    /**
+     * Determines if the alpha mode of the material will be adjusted depending on the color vertex attribute.
+     */
+    readonly adjustMaterialAlphaMode: boolean;
+    /**
+     * Determines if the I3S symbology will be parsed and applied for the layers.
+     */
+    readonly applySymbology: boolean;
+    /**
+     * Determines if the flat normals will be generated for I3S geometry without normals.
+     */
+    readonly calculateNormals: boolean;
     /**
      * Destroys the WebGL resources held by this object. Destroying an object allows for deterministic
     release of WebGL resources, instead of relying on the garbage collector to destroy this object.
@@ -32941,6 +32999,23 @@ export class I3SDataProvider {
      * @param options - An object describing initialization options
      */
     static fromUrl(url: string | Resource, options: I3SDataProvider.ConstructorOptions): Promise<I3SDataProvider>;
+    /**
+     * Returns the collection of names for all available attributes
+     * @returns The collection of attribute names
+     */
+    getAttributeNames(): string[];
+    /**
+     * Returns the collection of values for the attribute with the given name
+     * @param name - The attribute name
+     * @returns The collection of attribute values
+     */
+    getAttributeValues(name: string): string[];
+    /**
+     * Filters the drawn elements of a scene to specific attribute names and values
+     * @param [filters = []] - The collection of attribute filters
+     * @returns A promise that is resolved when the filter is applied
+     */
+    filterByAttributes(filters?: I3SNode.AttributeFilter[]): Promise<void>;
 }
 
 /**
@@ -33065,6 +33140,25 @@ export class I3SLayer {
      * When <code>true</code>, when the loaded I3S version is 1.6 or older
      */
     readonly legacyVersion16: boolean;
+    /**
+     * Filters the drawn elements of a layer to specific attribute names and values
+     * @param [filters = []] - The collection of attribute filters
+     * @returns A promise that is resolved when the filter is applied
+     */
+    filterByAttributes(filters?: I3SNode.AttributeFilter[]): Promise<void>;
+}
+
+export namespace I3SNode {
+    /**
+     * A filter given by an attribute name and values.
+    The 3D feature object should be hidden if its value for the attribute name is not specified in the collection of values.
+     * @property name - The name of the attribute
+     * @property values - The collection of values
+     */
+    type AttributeFilter = {
+        name: string;
+        values: string[] | number[];
+    };
 }
 
 /**
@@ -33117,6 +33211,12 @@ export class I3SNode {
      */
     loadFields(): Promise<void>;
     /**
+     * Loads the node field.
+     * @param name - The field name
+     * @returns A promise that is resolved when the I3S Node field is loaded
+     */
+    loadField(name: string): Promise<void>;
+    /**
      * Returns the fields for a given picked position
      * @param pickedPosition - The picked position
      * @returns Object containing field names and their values
@@ -33128,6 +33228,80 @@ export class I3SNode {
      * @returns Object containing field names and their values
      */
     getFieldsForFeature(featureIndex: number): any;
+}
+
+/**
+ * This class implements an I3S statistics for Building Scene Layer.
+<p>
+Do not construct this directly, instead access statistics through {@link I3SDataProvider}.
+</p>
+ */
+export class I3SStatistics {
+    constructor();
+    /**
+     * Gets the resource for the statistics
+     */
+    readonly resource: Resource;
+    /**
+     * Gets the I3S data for this object.
+     */
+    readonly data: any;
+    /**
+     * Gets the collection of attribute names.
+     */
+    readonly names: string[];
+}
+
+/**
+ * This class implements an I3S sublayer for Building Scene Layer.
+<p>
+This object is normally not instantiated directly, use {@link I3SSublayer.fromData}.
+</p>
+ */
+export class I3SSublayer {
+    constructor();
+    /**
+     * Gets the resource for the sublayer
+     */
+    readonly resource: Resource;
+    /**
+     * Gets the I3S data for this object.
+     */
+    readonly data: any;
+    /**
+     * Gets the name for the sublayer.
+     */
+    readonly name: string;
+    /**
+     * Gets the model name for the sublayer.
+     */
+    readonly modelName: string;
+    /**
+     * Gets the collection of child sublayers.
+     */
+    readonly sublayers: I3SSublayer[];
+    /**
+     * Gets or sets the sublayer visibility.
+     */
+    visibility: boolean;
+    /**
+     * Determines if the sublayer will be shown.
+     */
+    readonly show: boolean;
+}
+
+/**
+ * This class implements an I3S symbology for I3S Layers.
+<p>
+Do not construct this directly, instead access symbology through {@link I3SLayer}.
+</p>
+ */
+export class I3SSymbology {
+    constructor();
+    /**
+     * Gets the default symbology data.
+     */
+    readonly defaultSymbology: any;
 }
 
 /**
@@ -39795,6 +39969,11 @@ export class Scene {
      */
     light: Light;
     /**
+     * Use this to set the default value for {@link Scene#logarithmicDepthBuffer} in newly constructed Scenes
+    This property relies on fragmentDepth being supported.
+     */
+    static defaultLogDepthBuffer: any;
+    /**
      * Gets the canvas element to which this scene is bound.
      */
     readonly canvas: HTMLCanvasElement;
@@ -40021,6 +40200,23 @@ export class Scene {
      * @returns Object containing the picked primitive.
      */
     pick(windowPosition: Cartesian2, width?: number, height?: number): any;
+    /**
+     * Returns a {@link VoxelCell} for the voxel sample rendered at a particular window coordinate,
+    or undefined if no voxel is rendered at that position.
+     * @example
+     * On left click, report the value of the "color" property at that voxel sample.
+    handler.setInputAction(function(movement) {
+      const voxelCell = scene.pickVoxel(movement.position);
+      if (defined(voxelCell)) {
+        console.log(voxelCell.getProperty("color"));
+      }
+    }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
+     * @param windowPosition - Window coordinates to perform picking on.
+     * @param [width = 3] - Width of the pick rectangle.
+     * @param [height = 3] - Height of the pick rectangle.
+     * @returns Information about the voxel cell rendered at the picked position.
+     */
+    pickVoxel(windowPosition: Cartesian2, width?: number, height?: number): VoxelCell | undefined;
     /**
      * Returns the cartesian position reconstructed from the depth buffer and window position.
     <p>
@@ -40431,6 +40627,24 @@ export class ScreenSpaceCameraController {
      * controller = controller && controller.destroy();
      */
     destroy(): void;
+}
+
+/**
+ * Constants used to indicated what part of the sensor volume to display.
+ */
+export enum SensorVolumePortionToDisplay {
+    /**
+     * 0x0000.  Display the complete sensor volume.
+     */
+    COMPLETE = 0,
+    /**
+     * 0x0001.  Display the portion of the sensor volume that lies below the true horizon of the ellipsoid.
+     */
+    BELOW_ELLIPSOID_HORIZON = 1,
+    /**
+     * 0x0002.  Display the portion of the sensor volume that lies above the true horizon of the ellipsoid.
+     */
+    ABOVE_ELLIPSOID_HORIZON = 2
 }
 
 /**
@@ -41922,6 +42136,76 @@ export class ViewportQuad {
      * quad = quad && quad.destroy();
      */
     destroy(): void;
+}
+
+/**
+ * A cell from a {@link VoxelPrimitive}.
+<p>
+Provides access to properties associated with one cell of a voxel primitive.
+</p>
+<p>
+Do not construct this directly.  Access it through picking using {@link Scene#pickVoxel}.
+</p>
+ * @example
+ * // On left click, display all the properties for a voxel cell in the console log.
+handler.setInputAction(function(movement) {
+  const voxelCell = scene.pickVoxel(movement.position);
+  if (voxelCell instanceof Cesium.VoxelCell) {
+    const propertyIds = voxelCell.getPropertyIds();
+    const length = propertyIds.length;
+    for (let i = 0; i < length; ++i) {
+      const propertyId = propertyIds[i];
+      console.log(`{propertyId}: ${voxelCell.getProperty(propertyId)}`);
+    }
+  }
+}, Cesium.ScreenSpaceEventType.LEFT_CLICK);
+ * @param primitive - The voxel primitive containing the cell
+ * @param tileIndex - The index of the tile
+ * @param sampleIndex - The index of the sample within the tile, containing metadata for this cell
+ */
+export class VoxelCell {
+    constructor(primitive: VoxelPrimitive, tileIndex: number, sampleIndex: number);
+    /**
+     * All objects returned by {@link Scene#pick} have a <code>primitive</code> property. This returns
+    the VoxelPrimitive containing the cell.
+     */
+    readonly primitive: VoxelPrimitive;
+    /**
+     * Get the sample index of the cell.
+     */
+    readonly sampleIndex: number;
+    /**
+     * Get the index of the tile containing the cell.
+     */
+    readonly tileIndex: number;
+    /**
+     * Get a copy of the oriented bounding box containing the cell.
+     */
+    readonly orientedBoundingBox: OrientedBoundingBox;
+    /**
+     * Returns <code>true</code> if the feature contains this property.
+     * @param name - The case-sensitive name of the property.
+     * @returns Whether the feature contains this property.
+     */
+    hasProperty(name: string): boolean;
+    /**
+     * Returns an array of metadata property names for the feature.
+     * @returns The IDs of the feature's properties.
+     */
+    getNames(): string[];
+    /**
+     * Returns a copy of the value of the metadata in the cell with the given name.
+     * @example
+     * // Display all the properties for a voxel cell in the console log.
+    const names = voxelCell.getNames();
+    for (let i = 0; i < names.length; ++i) {
+      const name = names[i];
+      console.log(`{name}: ${voxelCell.getProperty(name)}`);
+    }
+     * @param name - The case-sensitive name of the property.
+     * @returns The value of the property or <code>undefined</code> if the feature does not have this property.
+     */
+    getProperty(name: string): any;
 }
 
 /**
@@ -44140,6 +44424,23 @@ export class HomeButtonViewModel {
 }
 
 /**
+ * I3S Building Scene Layer widget
+ * @param containerId - The DOM element ID that will contain the widget.
+ * @param i3sProvider - I3S Data provider instance.
+ */
+export class I3SBuildingSceneLayerExplorer {
+    constructor(containerId: string, i3sProvider: I3SDataProvider);
+}
+
+/**
+ * The view model for {@link I3SBuildingSceneLayerExplorer}.
+ * @param i3sProvider - I3S Data provider instance.
+ */
+export class I3sBslExplorerViewModel {
+    constructor(i3sProvider: I3SDataProvider);
+}
+
+/**
  * A widget for displaying information or a description.
  * @param container - The DOM element or ID that will contain the widget.
  */
@@ -45160,22 +45461,22 @@ export class Viewer {
 
 /**
  * A mixin which adds the {@link Cesium3DTilesInspector} widget to the {@link Viewer} widget.
-Rather than being called directly, this function is normally passed as
-a parameter to {@link Viewer#extend}, as shown in the example below.
+ * Rather than being called directly, this function is normally passed as
+ * a parameter to {@link Viewer#extend}, as shown in the example below.
  * @example
  * const viewer = new Cesium.Viewer('cesiumContainer');
-viewer.extend(Cesium.viewerCesium3DTilesInspectorMixin);
+ * viewer.extend(Cesium.viewerCesium3DTilesInspectorMixin);
  * @param viewer - The viewer instance.
  */
 export function viewerCesium3DTilesInspectorMixin(viewer: Viewer): void;
 
 /**
  * A mixin which adds the CesiumInspector widget to the Viewer widget.
-Rather than being called directly, this function is normally passed as
-a parameter to {@link Viewer#extend}, as shown in the example below.
+ * Rather than being called directly, this function is normally passed as
+ * a parameter to {@link Viewer#extend}, as shown in the example below.
  * @example
  * const viewer = new Cesium.Viewer('cesiumContainer');
-viewer.extend(Cesium.viewerCesiumInspectorMixin);
+ * viewer.extend(Cesium.viewerCesiumInspectorMixin);
  * @param viewer - The viewer instance.
  */
 export function viewerCesiumInspectorMixin(viewer: Viewer): void;
@@ -45209,18 +45510,18 @@ export function viewerDragDropMixin(viewer: Viewer, options?: {
 
 /**
  * A mixin which adds the {@link PerformanceWatchdog} widget to the {@link Viewer} widget.
-Rather than being called directly, this function is normally passed as
-a parameter to {@link Viewer#extend}, as shown in the example below.
+ * Rather than being called directly, this function is normally passed as
+ * a parameter to {@link Viewer#extend}, as shown in the example below.
  * @example
  * const viewer = new Cesium.Viewer('cesiumContainer');
-viewer.extend(Cesium.viewerPerformanceWatchdogMixin, {
-    lowFrameRateMessage : 'Why is this going so <em>slowly</em>?'
-});
+ * viewer.extend(Cesium.viewerPerformanceWatchdogMixin, {
+ *     lowFrameRateMessage : 'Why is this going so <em>slowly</em>?'
+ * });
  * @param viewer - The viewer instance.
  * @param [options] - An object with properties.
  * @param [options.lowFrameRateMessage = 'This application appears to be performing poorly on your system.  Please try using a different web browser or updating your video drivers.'] - The
-       message to display when a low frame rate is detected.  The message is interpeted as HTML, so make sure
-       it comes from a trusted source so that your application is not vulnerable to cross-site scripting attacks.
+ *        message to display when a low frame rate is detected.  The message is interpeted as HTML, so make sure
+ *        it comes from a trusted source so that your application is not vulnerable to cross-site scripting attacks.
  */
 export function viewerPerformanceWatchdogMixin(viewer: Viewer, options?: {
     lowFrameRateMessage?: string;
@@ -45228,11 +45529,11 @@ export function viewerPerformanceWatchdogMixin(viewer: Viewer, options?: {
 
 /**
  * A mixin which adds the {@link VoxelInspector} widget to the {@link Viewer} widget.
-Rather than being called directly, this function is normally passed as
-a parameter to {@link Viewer#extend}, as shown in the example below.
+ * Rather than being called directly, this function is normally passed as
+ * a parameter to {@link Viewer#extend}, as shown in the example below.
  * @example
  * var viewer = new Cesium.Viewer('cesiumContainer');
-viewer.extend(Cesium.viewerVoxelInspectorMixin);
+ * viewer.extend(Cesium.viewerVoxelInspectorMixin);
  * @param viewer - The viewer instance.
  */
 export function viewerVoxelInspectorMixin(viewer: Viewer): void;
