@@ -1,4 +1,4 @@
-// Cesium.VERSION = 1.115.0
+// Cesium.VERSION = 1.116.0
 // tslint:disable-next-line:export-just-namespace
 export = Cesium;
 export as namespace Cesium;
@@ -3049,6 +3049,136 @@ export class CesiumTerrainProvider {
      */
     loadTileDataAvailability(x: number, y: number, level: number): undefined | Promise<void>;
 }
+
+
+/**
+ * Contains functions for checking that supplied arguments are of a specified type
+ * or meet specified conditions
+ */
+export const Check: {
+  /**
+   * Throws if test is not defined
+   *
+   * @param {string} name The name of the variable being tested
+   * @param {*} test The value that is to be checked
+   * @exception {DeveloperError} test must be defined
+   */
+  defined<T>(name: string, test: T): asserts test is NonNullable<T>;
+  /**
+   * Contains type checking functions, all using the typeof operator
+   */
+  typeOf: {
+    /**
+     * Throws if test is not typeof 'string'
+     *
+     * @param {string} name The name of the variable being tested
+     * @param {*} test The value to test
+     * @exception {DeveloperError} test must be typeof 'string'
+     */
+    string(name: string, test: any): asserts test is string;
+    /**
+     * Throws if test is not typeof 'function'
+     *
+     * @param {string} name The name of the variable being tested
+     * @param {*} test The value to test
+     * @exception {DeveloperError} test must be typeof 'function'
+     */
+    func(name: string, test: any): asserts test is Function;
+    /**
+     * Throws if test is not typeof 'object'
+     *
+     * @param {string} name The name of the variable being tested
+     * @param {*} test The value to test
+     * @exception {DeveloperError} test must be typeof 'object'
+     */
+    object(name: string, test: any): asserts test is object;
+    /**
+     * Throws if test is not typeof 'boolean'
+     *
+     * @param {string} name The name of the variable being tested
+     * @param {*} test The value to test
+     * @exception {DeveloperError} test must be typeof 'boolean'
+     */
+    bool(name: string, test: any): asserts test is boolean;
+    /**
+     * Throws if test is not typeof 'bigint'
+     *
+     * @param {string} name The name of the variable being tested
+     * @param {*} test The value to test
+     * @exception {DeveloperError} test must be typeof 'bigint'
+     */
+    bigint(name: string, test: any): asserts test is bigint;
+    /**
+     * Throws if test is not typeof 'number'
+     *
+     * @param {string} name The name of the variable being tested
+     * @param {*} test The value to test
+     * @exception {DeveloperError} test must be typeof 'number'
+     */
+    number: {
+      (name: string, test: any): void;
+      /**
+       * Throws if test is not typeof 'number' and less than limit
+       *
+       * @param {string} name The name of the variable being tested
+       * @param {*} test The value to test
+       * @param {number} limit The limit value to compare against
+       * @exception {DeveloperError} test must be typeof 'number' and less than limit
+       */
+      lessThan(name: string, test: any, limit: number): asserts test is number;
+      /**
+       * Throws if test is not typeof 'number' and less than or equal to limit
+       *
+       * @param {string} name The name of the variable being tested
+       * @param {*} test The value to test
+       * @param {number} limit The limit value to compare against
+       * @exception {DeveloperError} test must be typeof 'number' and less than or equal to limit
+       */
+      lessThanOrEquals(
+        name: string,
+        test: any,
+        limit: number
+      ): asserts test is number;
+      /**
+       * Throws if test is not typeof 'number' and greater than limit
+       *
+       * @param {string} name The name of the variable being tested
+       * @param {*} test The value to test
+       * @param {number} limit The limit value to compare against
+       * @exception {DeveloperError} test must be typeof 'number' and greater than limit
+       */
+      greaterThan(
+        name: string,
+        test: any,
+        limit: number
+      ): asserts test is number;
+      /**
+       * Throws if test is not typeof 'number' and greater than or equal to limit
+       *
+       * @param {string} name The name of the variable being tested
+       * @param {*} test The value to test
+       * @param {number} limit The limit value to compare against
+       * @exception {DeveloperError} test must be typeof 'number' and greater than or equal to limit
+       */
+      greaterThanOrEquals(
+        name: string,
+        test: any,
+        limit: number
+      ): asserts test is number;
+      /**
+       * Throws if test1 and test2 is not typeof 'number' and not equal in value
+       *
+       * @param {string} name1 The name of the first variable being tested
+       * @param {string} name2 The name of the second variable being tested against
+       * @param {*} test1 The value to test
+       * @param {*} test2 The value to test against
+       * @exception {DeveloperError} test1 and test2 should be type of 'number' and be equal in value
+       */
+      equals(name1: string, name2: string, test1: any, test2: any): void;
+    };
+  };
+};
+
 
 /**
  * A description of a circle on the ellipsoid. Circle geometry can be rendered with both {@link Primitive} and {@link GroundPrimitive}.
@@ -7032,7 +7162,7 @@ export class Geometry {
     <ul>
        <li><code>position3DHigh</code> - High 32 bits for encoded 64-bit position computed with {@link GeometryPipeline.encodeAttribute}.  32-bit floating-point.  4 components per attribute.</li>
        <li><code>position3DLow</code> - Low 32 bits for encoded 64-bit position computed with {@link GeometryPipeline.encodeAttribute}.  32-bit floating-point.  4 components per attribute.</li>
-       <li><code>position3DHigh</code> - High 32 bits for encoded 64-bit 2D (Columbus view) position computed with {@link GeometryPipeline.encodeAttribute}.  32-bit floating-point.  4 components per attribute.</li>
+       <li><code>position2DHigh</code> - High 32 bits for encoded 64-bit 2D (Columbus view) position computed with {@link GeometryPipeline.encodeAttribute}.  32-bit floating-point.  4 components per attribute.</li>
        <li><code>position2DLow</code> - Low 32 bits for encoded 64-bit 2D (Columbus view) position computed with {@link GeometryPipeline.encodeAttribute}.  32-bit floating-point.  4 components per attribute.</li>
        <li><code>color</code> - RGBA color (normalized) usually from {@link GeometryInstance#color}.  32-bit floating-point.  4 components per attribute.</li>
        <li><code>pickColor</code> - RGBA color used for picking.  32-bit floating-point.  4 components per attribute.</li>
@@ -25691,6 +25821,63 @@ export enum Axis {
     Z = 2
 }
 
+export namespace Billboard {
+    /**
+     * Initialization options for the first param of Billboard constructor
+     * @property position - The cartesian position of the billboard.
+     * @property [id] - A user-defined object to return when the billboard is picked with {@link Scene#pick}.
+     * @property [show = true] - Determines if this billboard will be shown.
+     * @property [image] - A loaded HTMLImageElement, ImageData, or a url to an image to use for the billboard.
+     * @property [scale = 1.0] - A number specifying the uniform scale that is multiplied with the billboard's image size in pixels.
+     * @property [pixelOffset = Cartesian2.ZERO] - A {@link Cartesian2} Specifying the pixel offset in screen space from the origin of this billboard.
+     * @property [eyeOffset = Cartesian3.ZERO] - A {@link Cartesian3} Specifying the 3D Cartesian offset applied to this billboard in eye coordinates.
+     * @property [horizontalOrigin = HorizontalOrigin.CENTER] - A {@link HorizontalOrigin} Specifying the horizontal origin of this billboard.
+     * @property [verticalOrigin = VerticalOrigin.CENTER] - A {@link VerticalOrigin} Specifying the vertical origin of this billboard.
+     * @property [heightReference = HeightReference.NONE] - A {@link HeightReference} Specifying the height reference of this billboard.
+     * @property [color = Color.WHITE] - A {@link Color} Specifying the color that is multiplied with the billboard's texture.
+     * @property [rotation = 0] - A number specifying the rotation angle in radians.
+     * @property [alignedAxis = Cartesian3.ZERO] - A {@link Cartesian3} Specifying the aligned axis in world space.
+     * @property [sizeInMeters] - A boolean specifying if the billboard size is in meters or pixels.
+     * @property [width] - A number specifying the width of the billboard. If undefined, the image width will be used.
+     * @property [height] - A number specifying the height of the billboard. If undefined, the image height will be used.
+     * @property [scaleByDistance] - A {@link NearFarScalar} Specifying near and far scaling properties of a Billboard based on the billboard's distance from the camera.
+     * @property [translucencyByDistance] - A {@link NearFarScalar} Specifying near and far translucency properties of a Billboard based on the billboard's distance from the camera.
+     * @property [pixelOffsetScaleByDistance] - A {@link NearFarScalar} Specifying near and far pixel offset scaling properties of a Billboard based on the billboard's distance from the camera.
+     * @property [imageSubRegion] - A {@link BoundingRectangle} Specifying the sub-region of the image to use for the billboard, rather than the entire image.
+     * @property [distanceDisplayCondition] - A {@link DistanceDisplayCondition} Specifying the distance from the camera at which this billboard will be displayed.
+     * @property [disableDepthTestDistance] - A number specifying the distance from the camera at which to disable the depth test to, for example, prevent clipping against terrain.
+     */
+    type ConstructorOptions = {
+        position: Cartesian3;
+        id?: string;
+        show?: boolean;
+        image?: string | HTMLCanvasElement;
+        scale?: number;
+        pixelOffset?: Cartesian2;
+        eyeOffset?: Cartesian3;
+        horizontalOrigin?: HorizontalOrigin;
+        verticalOrigin?: VerticalOrigin;
+        heightReference?: HeightReference;
+        color?: Color;
+        rotation?: number;
+        alignedAxis?: Cartesian3;
+        sizeInMeters?: boolean;
+        width?: number;
+        height?: number;
+        scaleByDistance?: NearFarScalar;
+        translucencyByDistance?: NearFarScalar;
+        pixelOffsetScaleByDistance?: NearFarScalar;
+        imageSubRegion?: BoundingRectangle;
+        distanceDisplayCondition?: DistanceDisplayCondition;
+        disableDepthTestDistance?: number;
+    };
+    /**
+     * A function that creates an image.
+     * @param id - The identifier of the image to load.
+     */
+    type CreateImageCallback = (id: string) => HTMLImageElement | HTMLCanvasElement | Promise<HTMLImageElement | HTMLCanvasElement>;
+}
+
 /**
  * <div class="notice">
 A billboard is created and its initial
@@ -25703,9 +25890,11 @@ and rendered using a {@link BillboardCollection}.
 <img src='Images/Billboard.png' width='400' height='300' /><br />
 Example billboards
 </div>
+ * @param options - Object describing initialization options
+ * @param billboardCollection - Instance of BillboardCollection
  */
 export class Billboard {
-    constructor();
+    constructor(options: Billboard.ConstructorOptions, billboardCollection: BillboardCollection);
     /**
      * Determines if this billboard will be shown.  Use this to hide or show a billboard, instead
     of removing it and re-adding it to the collection.
@@ -26008,14 +26197,6 @@ export class Billboard {
     equals(other: Billboard): boolean;
 }
 
-export namespace Billboard {
-    /**
-     * A function that creates an image.
-     * @param id - The identifier of the image to load.
-     */
-    type CreateImageCallback = (id: string) => HTMLImageElement | HTMLCanvasElement | Promise<HTMLImageElement | HTMLCanvasElement>;
-}
-
 /**
  * A renderable collection of billboards.  Billboards are viewport-aligned
 images positioned in the 3D scene.
@@ -26149,7 +26330,7 @@ export class BillboardCollection {
      * @param [options] - A template describing the billboard's properties as shown in Example 1.
      * @returns The billboard that was added to the collection.
      */
-    add(options?: any): Billboard;
+    add(options?: Billboard.ConstructorOptions): Billboard;
     /**
      * Removes a billboard from the collection.
      * @example
@@ -28004,7 +28185,6 @@ export namespace Cesium3DTileset {
      * @property [showCreditsOnScreen = false] - Whether to display the credits of this tileset on screen.
      * @property [splitDirection = SplitDirection.NONE] - The {@link SplitDirection} split to apply to this tileset.
      * @property [enableCollision = false] - When <code>true</code>, enables collisions for camera or CPU picking. While this is <code>true</code> the camera will be prevented from going below the tileset surface if {@link ScreenSpaceCameraController#enableCollisionDetection} is true.
-     * @property [disableCollision = true] - Whether to turn off collisions for camera collisions or picking. While this is <code>true</code> the camera will be allowed to go in or below the tileset surface if {@link ScreenSpaceCameraController#enableCollisionDetection} is true. Deprecated.
      * @property [projectTo2D = false] - Whether to accurately project the tileset to 2D. If this is true, the tileset will be projected accurately to 2D, but it will use more memory to do so. If this is false, the tileset will use less memory and will still render in 2D / CV mode, but its projected positions may be inaccurate. This cannot be set after the tileset has been created.
      * @property [enablePick = false] - Whether to allow collision and CPU picking with <code>pick</code> when using WebGL 1. If using WebGL 2 or above, this option will be ignored. If using WebGL 1 and this is true, the <code>pick</code> operation will work correctly, but it will use more memory to do so. If running with WebGL 1 and this is false, the model will use less memory, but <code>pick</code> will always return <code>undefined</code>. This cannot be set after the tileset has loaded.
      * @property [debugHeatmapTilePropertyName] - The tile variable to colorize as a heatmap. All rendered tiles will be colorized relative to each other's specified variable value.
@@ -28068,7 +28248,6 @@ export namespace Cesium3DTileset {
         showCreditsOnScreen?: boolean;
         splitDirection?: SplitDirection;
         enableCollision?: boolean;
-        disableCollision?: boolean;
         projectTo2D?: boolean;
         enablePick?: boolean;
         debugHeatmapTilePropertyName?: string;
@@ -28556,10 +28735,6 @@ export class Cesium3DTileset {
      * Function for examining vector lines as they are being streamed.
      */
     examineVectorLinesFunction: (...params: any[]) => any;
-    /**
-     * Whether to turn off collisions for camera collisions or picking. While this is <code>true</code> the camera will be allowed to go in or below the tileset surface if {@link ScreenSpaceCameraController#enableCollisionDetection} is true.
-     */
-    disableCollision: boolean;
     /**
      * Gets the tileset's asset object property, which contains metadata about the tileset.
     <p>
@@ -31732,20 +31907,6 @@ export class Globe {
      */
     readonly terrainProviderChanged: Event;
     /**
-     * A scalar used to exaggerate the terrain. Defaults to <code>1.0</code> (no exaggeration).
-    A value of <code>2.0</code> scales the terrain by 2x.
-    A value of <code>0.0</code> makes the terrain completely flat.
-    Note that terrain exaggeration will not modify any other primitive as they are positioned relative to the ellipsoid.
-     */
-    terrainExaggeration: number;
-    /**
-     * The height from which terrain is exaggerated. Defaults to <code>0.0</code> (scaled relative to ellipsoid surface).
-    Terrain that is above this height will scale upwards and terrain that is below this height will scale downwards.
-    Note that terrain exaggeration will not modify any other primitive as they are positioned relative to the ellipsoid.
-    If {@link Globe#terrainExaggeration} is <code>1.0</code> this value will have no effect.
-     */
-    terrainExaggerationRelativeHeight: number;
-    /**
      * Gets an event that's raised when the length of the tile load queue has changed since the last render frame.  When the load queue is empty,
     all terrain and imagery for the current view have been loaded.  The event passes the new length of the tile load queue.
      */
@@ -34213,13 +34374,69 @@ export enum IonWorldImageryStyle {
     ROAD = 4
 }
 
+export namespace Label {
+    /**
+     * Initialization options for the Label constructor
+     * @property position - The cartesian position of the label.
+     * @property [id] - A user-defined object to return when the label is picked with {@link Scene#pick}.
+     * @property [show = true] - Determines if this label will be shown.
+     * @property [text] - A string specifying the text of the label.
+     * @property [font = '30px sans-serif'] - A string specifying the font used to draw this label. Fonts are specified using the same syntax as the CSS 'font' property.
+     * @property [style = LabelStyle.FILL] - A {@link LabelStyle} specifying the style of the label.
+     * @property [scale = 1.0] - A number specifying the uniform scale that is multiplied with the label size.
+     * @property [showBackground = false] - Determines if a background behind this label will be shown.
+     * @property [backgroundColor = new Color(0.165, 0.165, 0.165, 0.8)] - A {@link Color} specifying the background color of the label.
+     * @property [backgroundPadding = new Cartesian2(7, 5)] - A {@link Cartesian2} Specifying the horizontal and vertical background padding in pixels.
+     * @property [pixelOffset = Cartesian2.ZERO] - A {@link Cartesian2} specifying the pixel offset in screen space from the origin of this label.
+     * @property [eyeOffset = Cartesian3.ZERO] - A {@link Cartesian3} specifying the 3D Cartesian offset applied to this label in eye coordinates.
+     * @property [horizontalOrigin = HorizontalOrigin.CENTER] - A {@link HorizontalOrigin} specifying the horizontal origin of this label.
+     * @property [verticalOrigin = VerticalOrigin.CENTER] - A {@link VerticalOrigin} specifying the vertical origin of this label.
+     * @property [heightReference = HeightReference.NONE] - A {@link HeightReference} specifying the height reference of this label.
+     * @property [fillColor = Color.WHITE] - A {@link Color} specifying the fill color of the label.
+     * @property [outlineColor = Color.BLACK] - A {@link Color} specifying the outline color of the label.
+     * @property [outlineWidth = 1.0] - A number specifying the outline width of the label.
+     * @property [translucencyByDistance] - A {@link NearFarScalar} specifying near and far translucency properties of the label based on the label's distance from the camera.
+     * @property [pixelOffsetScaleByDistance] - A {@link NearFarScalar} specifying near and far pixel offset scaling properties of the label based on the label's distance from the camera.
+     * @property [scaleByDistance] - A {@link NearFarScalar} specifying near and far scaling properties of the label based on the label's distance from the camera.
+     * @property [distanceDisplayCondition] - A {@link DistanceDisplayCondition} specifying at what distance from the camera that this label will be displayed.
+     * @property [disableDepthTestDistance] - A number specifying the distance from the camera at which to disable the depth test to, for example, prevent clipping against terrain.
+     */
+    type ConstructorOptions = {
+        position: Cartesian3;
+        id?: string;
+        show?: boolean;
+        text?: string;
+        font?: string;
+        style?: LabelStyle;
+        scale?: number;
+        showBackground?: boolean;
+        backgroundColor?: Color;
+        backgroundPadding?: Cartesian2;
+        pixelOffset?: Cartesian2;
+        eyeOffset?: Cartesian3;
+        horizontalOrigin?: HorizontalOrigin;
+        verticalOrigin?: VerticalOrigin;
+        heightReference?: HeightReference;
+        fillColor?: Color;
+        outlineColor?: Color;
+        outlineWidth?: number;
+        translucencyByDistance?: NearFarScalar;
+        pixelOffsetScaleByDistance?: NearFarScalar;
+        scaleByDistance?: NearFarScalar;
+        distanceDisplayCondition?: DistanceDisplayCondition;
+        disableDepthTestDistance?: number;
+    };
+}
+
 /**
  * <div class="notice">
 Create labels by calling {@link LabelCollection#add}. Do not call the constructor directly.
 </div>
+ * @param options - Object describing initialization options
+ * @param labelCollection - Instance of LabelCollection
  */
 export class Label {
-    constructor();
+    constructor(options: Label.ConstructorOptions, labelCollection: LabelCollection);
     /**
      * Determines if this label will be shown.  Use this to hide or show a label, instead
     of removing it and re-adding it to the collection.
@@ -34604,7 +34821,7 @@ export class LabelCollection {
      * @param [options] - A template describing the label's properties as shown in Example 1.
      * @returns The label that was added to the collection.
      */
-    add(options?: any): Label;
+    add(options?: Label.ConstructorOptions): Label;
     /**
      * Removes a label from the collection.  Once removed, a label is no longer usable.
      * @example
@@ -45461,22 +45678,22 @@ export class Viewer {
 
 /**
  * A mixin which adds the {@link Cesium3DTilesInspector} widget to the {@link Viewer} widget.
- * Rather than being called directly, this function is normally passed as
- * a parameter to {@link Viewer#extend}, as shown in the example below.
+Rather than being called directly, this function is normally passed as
+a parameter to {@link Viewer#extend}, as shown in the example below.
  * @example
  * const viewer = new Cesium.Viewer('cesiumContainer');
- * viewer.extend(Cesium.viewerCesium3DTilesInspectorMixin);
+viewer.extend(Cesium.viewerCesium3DTilesInspectorMixin);
  * @param viewer - The viewer instance.
  */
 export function viewerCesium3DTilesInspectorMixin(viewer: Viewer): void;
 
 /**
  * A mixin which adds the CesiumInspector widget to the Viewer widget.
- * Rather than being called directly, this function is normally passed as
- * a parameter to {@link Viewer#extend}, as shown in the example below.
+Rather than being called directly, this function is normally passed as
+a parameter to {@link Viewer#extend}, as shown in the example below.
  * @example
  * const viewer = new Cesium.Viewer('cesiumContainer');
- * viewer.extend(Cesium.viewerCesiumInspectorMixin);
+viewer.extend(Cesium.viewerCesiumInspectorMixin);
  * @param viewer - The viewer instance.
  */
 export function viewerCesiumInspectorMixin(viewer: Viewer): void;
@@ -45510,18 +45727,18 @@ export function viewerDragDropMixin(viewer: Viewer, options?: {
 
 /**
  * A mixin which adds the {@link PerformanceWatchdog} widget to the {@link Viewer} widget.
- * Rather than being called directly, this function is normally passed as
- * a parameter to {@link Viewer#extend}, as shown in the example below.
+Rather than being called directly, this function is normally passed as
+a parameter to {@link Viewer#extend}, as shown in the example below.
  * @example
  * const viewer = new Cesium.Viewer('cesiumContainer');
- * viewer.extend(Cesium.viewerPerformanceWatchdogMixin, {
- *     lowFrameRateMessage : 'Why is this going so <em>slowly</em>?'
- * });
+viewer.extend(Cesium.viewerPerformanceWatchdogMixin, {
+    lowFrameRateMessage : 'Why is this going so <em>slowly</em>?'
+});
  * @param viewer - The viewer instance.
  * @param [options] - An object with properties.
  * @param [options.lowFrameRateMessage = 'This application appears to be performing poorly on your system.  Please try using a different web browser or updating your video drivers.'] - The
- *        message to display when a low frame rate is detected.  The message is interpeted as HTML, so make sure
- *        it comes from a trusted source so that your application is not vulnerable to cross-site scripting attacks.
+       message to display when a low frame rate is detected.  The message is interpeted as HTML, so make sure
+       it comes from a trusted source so that your application is not vulnerable to cross-site scripting attacks.
  */
 export function viewerPerformanceWatchdogMixin(viewer: Viewer, options?: {
     lowFrameRateMessage?: string;
@@ -45529,11 +45746,11 @@ export function viewerPerformanceWatchdogMixin(viewer: Viewer, options?: {
 
 /**
  * A mixin which adds the {@link VoxelInspector} widget to the {@link Viewer} widget.
- * Rather than being called directly, this function is normally passed as
- * a parameter to {@link Viewer#extend}, as shown in the example below.
+Rather than being called directly, this function is normally passed as
+a parameter to {@link Viewer#extend}, as shown in the example below.
  * @example
  * var viewer = new Cesium.Viewer('cesiumContainer');
- * viewer.extend(Cesium.viewerVoxelInspectorMixin);
+viewer.extend(Cesium.viewerVoxelInspectorMixin);
  * @param viewer - The viewer instance.
  */
 export function viewerVoxelInspectorMixin(viewer: Viewer): void;
